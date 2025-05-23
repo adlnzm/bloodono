@@ -1,0 +1,260 @@
+import streamlit as st
+import pymysql
+
+# Database connection setup
+def get_connection():
+    return pymysql.connect(
+        host='localhost',
+        user='root',
+        password='',  # Replace with your MySQL password
+        database='blood_donation_db',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+# Initialize database tables
+def initialize_tables():
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            # Donor table
+            cursor.execute('''CREATE TABLE IF NOT EXISTS donors (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                name VARCHAR(255),
+                                phone_number VARCHAR(20),
+                                village_town VARCHAR(255),
+                                city VARCHAR(255),
+                                state VARCHAR(255),
+                                pin VARCHAR(10),
+                                blood_group VARCHAR(5)
+                            )''')
+
+            # Receiver (Patient) table
+            cursor.execute('''CREATE TABLE IF NOT EXISTS receivers (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                name VARCHAR(255),
+                                phone_number VARCHAR(20),
+                                village_town VARCHAR(255),
+                                city VARCHAR(255),
+                                state VARCHAR(255),
+                                pin VARCHAR(10),
+                                blood_group VARCHAR(5)
+                            )''')
+
+            # Hospital table
+            cursor.execute('''CREATE TABLE IF NOT EXISTS hospitals (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                hospital_name VARCHAR(255),
+                                phone_number VARCHAR(20),
+                                village_town VARCHAR(255),
+                                city VARCHAR(255),
+                                state VARCHAR(255),
+                                pin VARCHAR(10)
+                            )''')
+        connection.commit()
+    finally:
+        connection.close()
+
+# Add a donor
+def add_donor(name, phone_number, village_town, city, state, pin, blood_group):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('''INSERT INTO donors (name, phone_number, village_town, city, state, pin, blood_group)
+                              VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                           (name, phone_number, village_town, city, state, pin, blood_group))
+        connection.commit()
+    finally:
+        connection.close()
+
+# Get list of donors
+def get_donors():
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM donors')
+            return cursor.fetchall()
+    finally:
+        connection.close()
+
+# Delete a donor
+def delete_donor(donor_id):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('DELETE FROM donors WHERE id = %s', (donor_id,))
+        connection.commit()
+    finally:
+        connection.close()
+
+# Add a receiver
+def add_receiver(name, phone_number, village_town, city, state, pin, blood_group):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('''INSERT INTO receivers (name, phone_number, village_town, city, state, pin, blood_group)
+                              VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                           (name, phone_number, village_town, city, state, pin, blood_group))
+        connection.commit()
+    finally:
+        connection.close()
+
+# Get list of receivers
+def get_receivers():
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM receivers')
+            return cursor.fetchall()
+    finally:
+        connection.close()
+
+# Delete a receiver
+def delete_receiver(receiver_id):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('DELETE FROM receivers WHERE id = %s', (receiver_id,))
+        connection.commit()
+    finally:
+        connection.close()
+
+# Add a hospital
+def add_hospital(hospital_name, phone_number, village_town, city, state, pin):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('''INSERT INTO hospitals (hospital_name, phone_number, village_town, city, state, pin)
+                              VALUES (%s, %s, %s, %s, %s, %s)''',
+                           (hospital_name, phone_number, village_town, city, state, pin))
+        connection.commit()
+    finally:
+        connection.close()
+
+# Delete a hospital
+def delete_hospital(hospital_id):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('DELETE FROM hospitals WHERE id = %s', (hospital_id,))
+        connection.commit()
+    finally:
+        connection.close()
+
+# Search donors by blood group and city
+def search_donors_by_blood_group_and_city(blood_group, city):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM donors WHERE blood_group = %s AND city = %s', (blood_group, city))
+            return cursor.fetchall()
+    finally:
+        connection.close()
+
+# Streamlit UI
+st.title("Blood-Connect")
+
+initialize_tables()
+
+menu = ["Donor", "Receiver", "Hospital", "Search"]
+choice = st.sidebar.selectbox("Menu", menu)
+
+if choice == "Donor":
+    donor_action = st.selectbox("Choose an action", ["Add Donor", "Donors List", "Delete Donor"])
+
+    if donor_action == "Add Donor":
+        st.subheader("Add Donor")
+        with st.form("donor_form"):
+            name = st.text_input("Name")
+            phone_number = st.text_input("Phone Number")
+            village_town = st.text_input("Village/Town")
+            city = st.text_input("City")
+            state = st.text_input("State")
+            pin = st.text_input("PIN")
+            blood_group = st.text_input("Blood Group")
+            submitted = st.form_submit_button("Add Donor")
+            if submitted:
+                add_donor(name, phone_number, village_town, city, state, pin, blood_group)
+                st.success("Donor added successfully!")
+
+    elif donor_action == "Donors List":
+        st.subheader("Donors List")
+        donors = get_donors()
+        st.write(donors)
+
+    elif donor_action == "Delete Donor":
+        st.subheader("Delete Donor")
+        donor_id = st.text_input("Enter Donor ID")
+        if st.button("Delete Donor"):
+            delete_donor(donor_id)
+            st.success("Donor deleted successfully!")
+
+elif choice == "Receiver":
+    receiver_action = st.selectbox("Choose an action", ["Add Receiver", "List of Receivers", "Delete Receiver"])
+
+    if receiver_action == "Add Receiver":
+        st.subheader("Add Receiver")
+        with st.form("receiver_form"):
+            name = st.text_input("Name")
+            phone_number = st.text_input("Phone Number")
+            village_town = st.text_input("Village/Town")
+            city = st.text_input("City")
+            state = st.text_input("State")
+            pin = st.text_input("PIN")
+            blood_group = st.text_input("Blood Group")
+            submitted = st.form_submit_button("Add Receiver")
+            if submitted:
+                add_receiver(name, phone_number, village_town, city, state, pin, blood_group)
+                st.success("Receiver added successfully!")
+
+    elif receiver_action == "List of Receivers":
+        st.subheader("List of Receivers")
+        receivers = get_receivers()
+        st.write(receivers)
+
+    elif receiver_action == "Delete Receiver":
+        st.subheader("Delete Receiver")
+        receiver_id = st.text_input("Enter Receiver ID")
+        if st.button("Delete Receiver"):
+            delete_receiver(receiver_id)
+            st.success("Receiver deleted successfully!")
+
+elif choice == "Hospital":
+    hospital_action = st.selectbox("Choose an action", ["Add Hospital", "Delete Hospital"])
+
+    if hospital_action == "Add Hospital":
+        st.subheader("Add Hospital")
+        with st.form("hospital_form"):
+            hospital_name = st.text_input("Hospital Name")
+            phone_number = st.text_input("Phone Number")
+            village_town = st.text_input("Village/Town")
+            city = st.text_input("City")
+            state = st.text_input("State")
+            pin = st.text_input("PIN")
+            submitted = st.form_submit_button("Add Hospital")
+            if submitted:
+                add_hospital(hospital_name, phone_number, village_town, city, state, pin)
+                st.success("Hospital added successfully!")
+
+    elif hospital_action == "Delete Hospital":
+        st.subheader("Delete Hospital")
+        hospital_id = st.text_input("Enter Hospital ID")
+        if st.button("Delete Hospital"):
+            delete_hospital(hospital_id)
+            st.success("Hospital deleted successfully!")
+
+elif choice == "Search":
+    st.subheader("Search Donors by Blood Group and City")
+    blood_group = st.selectbox("Select Blood Type", ["A+", "B+", "AB+", "O+", "A-", "B-", "AB-", "O-"])
+    city = st.text_input("Enter City")
+    if st.button("Search"):
+        matching_donors = search_donors_by_blood_group_and_city(blood_group, city)
+        if matching_donors:
+            st.write("Matching Donors:", matching_donors)
+            selected_donor = st.selectbox("Select Donor", matching_donors, format_func=lambda x: x['name'])
+            patient_name = st.text_input("Enter Patient Name")
+            selected_date = st.date_input("Select Date for Donation")
+            selected_time = st.time_input("Select Time for Donation")
+            if st.button("Confirm Donation"):
+                st.success(f"Donation scheduled for {selected_donor['name']} and patient {patient_name} on {selected_date} at {selected_time}.")
+        else:
+            st.warning("No donors found for the specified criteria.")
