@@ -16,11 +16,11 @@ Blood-Connect is a web-based application built with **Streamlit** and **MySQL** 
   
 ## Preview
 
-![Blood Connect UI](path_to_your_screenshot.png) *(Replace with actual image path)*
+![images](home.png)
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 * [Streamlit](https://streamlit.io/) – For building the web app.
 * [MySQL](https://www.mysql.com/) – Database for storing donor, receiver, and hospital data.
