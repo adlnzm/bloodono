@@ -79,10 +79,10 @@ Blood-Connect is a web-based application built with **Streamlit** and **MySQL** 
 ```
 blood-connect/
 │
-├── app.py                # Main Streamlit application
-├── requirements.txt      # Python dependencies
-├── blood_donate.jpeg     # UI image for display
-└── README.md             # Project documentation
+├── blood_donor_two.py          # Main Streamlit application
+├── blood_donor_report.pdf      # Python dependencies
+├── home.png                    # UI image for display
+└── README.md                   # Project documentation
 ```
 
 ## To-Do / Future Improvements
